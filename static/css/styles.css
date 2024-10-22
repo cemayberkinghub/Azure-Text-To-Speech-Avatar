@@ -1,0 +1,128 @@
+/* General Body Styling */
+body {
+    font-family: 'Segoe UI';
+    background-color: #F2F3F3;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Styling for the Logo and Title Container */
+.logo-title-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Keep logo on the left, title in the center */
+    width: 100%;
+    padding: 20px;
+    margin-left: 20px;
+}
+
+/* Styling for the Logo */
+.logo {
+    width: 200px;
+    height: auto;
+    margin-left: 20px;
+}
+
+/* Title Styling */
+h1 {
+    font-size: 2rem;
+    color: #222222;
+    margin: 0 auto;
+}
+
+/* Button Container */
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px; /* Space between buttons */
+    margin-top: 20px;
+}
+
+/* Button Styling */
+button {
+    background-color: #5C2D91; /* Primary Color */
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #32145A; /* Darker variant for hover */
+}
+
+button:disabled {
+    background-color: #737373;
+    cursor: not-allowed;
+}
+
+/* Main Layout Container */
+.main-container {
+    display: flex;
+    justify-content: space-between; /* Distribute space between avatar and chat */
+    align-items: flex-start;
+    gap: 20px; /* Space between avatar and chat area */
+    margin-top: 20px;
+    width: 100%;
+    max-width: 1400px;
+}
+
+/* Video Container for Avatar */
+#videoContainer {
+    background-color: #FFFFFF;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    height: 505px;
+    width: 100%;
+}
+
+#remoteVideo video {
+    width: 100%;
+    object-fit: contain;
+    max-height: 500px;
+}
+
+/* Chat History Styling */
+#chatHistory {
+    background-color: #FFFFFF;
+    border: 1px solid #D7D7DF;
+    padding: 10px;
+    font-size: 1rem;
+    color: #222222;
+    border-radius: 5px;
+    height: 400px; /* Height for chat history */
+    overflow-y: auto; /* Make it scrollable */
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Right Side Chat and Input Container */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 30%;
+    width: 100%;
+}
+
+/* Type Message Box */
+#userMessageBox {
+    font-size: 1rem;
+    padding: 10px;
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid #D7D7DF;
+    margin-top: 10px;
+}
+
+/* Hide Latency Logs */
+#latencyLog {
+    display: none;
+}
