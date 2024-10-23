@@ -33,7 +33,7 @@ user_assigned_managed_identity_client_id = os.environ.get('USER_ASSIGNED_MANAGED
 azure_openai_endpoint = os.environ.get('AZURE_OPENAI_ENDPOINT')
 azure_openai_api_key = os.environ.get('AZURE_OPENAI_API_KEY')
 azure_openai_deployment_name = os.environ.get('AZURE_OPENAI_DEPLOYMENT_NAME')
-azure_openai_system_prompt = "You are an AI assistant named Lisa that helps people find information."
+azure_openai_system_prompt = "You are an AI assistant named Lisa that helps people find information. Always provide concise answers, not longer than 100 words."
 
 # Cognitive search resource (optional, only required for 'on your data' scenario)
 cognitive_search_endpoint = os.environ.get('COGNITIVE_SEARCH_ENDPOINT')
@@ -115,6 +115,7 @@ def connectAvatar() -> Response:
 
     # Override default values with client provided values
     client_context['azure_openai_deployment_name'] = azure_openai_deployment_name
+    client_context['cognitive_search_index_name'] = cognitive_search_index_name
     client_context['tts_voice'] = tts_voice
     client_context['custom_voice_endpoint_id'] = custom_voice_endpoint
     client_context['personal_voice_speaker_profile_id'] = personal_voice_speaker_profile
@@ -278,7 +279,8 @@ def initializeClient() -> uuid.UUID:
         'is_speaking': False, # Flag to indicate if the avatar is speaking
         'spoken_text_queue': [], # Queue to store the spoken text
         'speaking_thread': None, # The thread to speak the spoken text queue
-        'last_speak_time': None # The last time the avatar spoke
+        'last_speak_time': None, # The last time the avatar spoke
+        'data_sources': [] # Data sources for 'on your data' scenario
     }
     return client_id
 
@@ -307,15 +309,47 @@ def refreshSpeechToken() -> None:
 def initializeChatContext(system_prompt: str, client_id: uuid.UUID) -> None:
     global client_contexts
     client_context = client_contexts[client_id]
+    cognitive_search_index_name = client_context['cognitive_search_index_name']
     messages = client_context['messages']
+    data_sources = client_context['data_sources']
+
+    # Initialize data sources for 'on your data' scenario
+    data_sources.clear()
+    if cognitive_search_endpoint and cognitive_search_api_key and cognitive_search_index_name:
+        # On-your-data scenario
+        data_source = {
+            'type': 'azure_search',
+            'parameters': {
+                'endpoint': cognitive_search_endpoint,
+                'index_name': cognitive_search_index_name,
+                'authentication': {
+                    'type': 'api_key',
+                    'key': cognitive_search_api_key
+                },
+                'semantic_configuration': '',
+                'query_type': 'simple',
+                'fields_mapping': {
+                    'content_fields_separator': '\n',
+                    'content_fields': ['chunk'],
+                    'filepath_field': None,
+                    'title_field': 'title',
+                    'url_field': None
+                },
+                'in_scope': True,
+                'role_information': system_prompt
+            }
+        }
+        data_sources.append(data_source)
 
     # Initialize messages
     messages.clear()
-    system_message = {
-        'role': 'system',
-        'content': system_prompt
-    }
-    messages.append(system_message)
+    if len(data_sources) == 0:
+        system_message = {
+            'role': 'system',
+            'content': system_prompt
+        }
+        messages.append(system_message)
+
 
 # Handle the user query and return the assistant reply. For chat scenario.
 # The function is a generator, which yields the assistant reply in chunks.
@@ -325,6 +359,7 @@ def handleUserQuery(user_query: str, client_id: uuid.UUID):
     client_context = client_contexts[client_id]
     azure_openai_deployment_name = client_context['azure_openai_deployment_name']
     messages = client_context['messages']
+    data_sources = client_context['data_sources']
 
     chat_message = {
         'role': 'user',
@@ -338,12 +373,13 @@ def handleUserQuery(user_query: str, client_id: uuid.UUID):
 
     assistant_reply = ''
     spoken_sentence = ''
+    tool_content = ''
 
     aoai_start_time = datetime.datetime.now(pytz.UTC)
     response = azure_openai.chat.completions.create(
         model=azure_openai_deployment_name,
         messages=messages,
-        extra_body=None,
+        extra_body={ 'data_sources' : data_sources } if len(data_sources) > 0 else None,
         stream=True)
 
     is_first_chunk = True
@@ -386,6 +422,13 @@ def handleUserQuery(user_query: str, client_id: uuid.UUID):
     if spoken_sentence != '':
         speakWithQueue(spoken_sentence.strip(), 0, client_id)
         spoken_sentence = ''
+
+    if len(data_sources) > 0:
+        tool_message = {
+            'role': 'tool',
+            'content': tool_content
+        }
+        messages.append(tool_message)
 
     assistant_message = {
         'role': 'assistant',
