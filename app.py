@@ -35,25 +35,31 @@ azure_openai_api_key = os.environ.get('AZURE_OPENAI_API_KEY')
 azure_openai_deployment_name = os.environ.get('AZURE_OPENAI_DEPLOYMENT_NAME')
 azure_openai_system_prompt = "You are an AI assistant named Lisa that helps people find information."
 
+# Cognitive search resource (optional, only required for 'on your data' scenario)
+cognitive_search_endpoint = os.environ.get('COGNITIVE_SEARCH_ENDPOINT')
+cognitive_search_api_key = os.environ.get('COGNITIVE_SEARCH_API_KEY')
+cognitive_search_index_name = os.environ.get('COGNITIVE_SEARCH_INDEX_NAME')
+
 # Customized ICE server (optional, only required for customized ICE server)
 ice_server_url = os.environ.get('ICE_SERVER_URL') # The ICE URL, e.g. turn:x.x.x.x:3478
 ice_server_url_remote = os.environ.get('ICE_SERVER_URL_REMOTE') # The ICE URL for remote side, e.g. turn:x.x.x.x:3478. This is only required when the ICE address for remote side is different from local side.
 ice_server_username = os.environ.get('ICE_SERVER_USERNAME') # The ICE username
 ice_server_password = os.environ.get('ICE_SERVER_PASSWORD') # The ICE password
 
-# Avatar Configuration
-avatar_character = "lisa"
-avatar_style = "casual-sitting"
-is_custom_avatar = "False"
-background_color = "#FFFFFFFF"
+# TTS Avatar Configuration
+avatar_character = os.environ.get('AVATAR_CHARACTER')
+avatar_style = os.environ.get('AVATAR_STYLE')
+is_custom_avatar = os.environ.get('IS_CUSTOM_AVATAR')
+
+background_color = "#FFFFFF"
 background_image_url = None
 transparent_background = "False"
 video_crop = "False"
 
 # Avatar Voice Configuration
-tts_voice = 'en-US-JennyMultilingualV2Neural'
-custom_voice_endpoint = None
-personal_voice_speaker_profile = None
+tts_voice = os.environ.get('TTS_VOICE')
+custom_voice_endpoint = os.environ.get('CUSTOM_VOICE_ENDPOINT') # optional
+personal_voice_speaker_profile = os.environ.get('PERSONAL_VOICE_SPEAKER_PROFILE') # optional
 
 # Constant variables
 sentence_level_punctuations = [ '.', '?', '!', ':', ';', '。', '?', '!', ':', ';' ] # Punctuations that indicate the end of a sentence
