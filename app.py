@@ -18,6 +18,11 @@ import azure.cognitiveservices.speech as speechsdk
 from azure.identity import DefaultAzureCredential
 from flask import Flask, Response, render_template, request
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 # Create the Flask app
 app = Flask(__name__, template_folder='.')
 
@@ -65,6 +70,8 @@ personal_voice_speaker_profile = os.environ.get('PERSONAL_VOICE_SPEAKER_PROFILE'
 sentence_level_punctuations = [ '.', '?', '!', ':', ';', '。', '?', '!', ':', ';' ] # Punctuations that indicate the end of a sentence
 enable_quick_reply = False # Enable quick reply for certain chat models which take longer time to respond
 quick_replies = [ 'Let me take a look.', 'Let me check.', 'One moment, please.' ] # Quick reply reponses
+oyd_doc_regex = re.compile(r'\[doc(\d+)\]')
+
 
 # Global variables
 client_contexts = {} # Client contexts
@@ -394,6 +401,8 @@ def handleUserQuery(user_query: str, client_id: uuid.UUID):
                     print(f"AOAI first token latency: {first_token_latency_ms}ms")
                     yield f"<FTL>{first_token_latency_ms}</FTL>"
                     is_first_chunk = False
+                if oyd_doc_regex.search(response_token):
+                    response_token = oyd_doc_regex.sub('',response_token).strip()
                 yield response_token # yield response token to client as display text
                 assistant_reply += response_token  # build up the assistant message
                 if response_token == '\n' or response_token == '\n\n':
